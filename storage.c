@@ -157,6 +157,10 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 //int x, int y : coordinate of the cell to extract
 //return : 0 - successfully extracted, -1 = failed to extract
 int str_extractStorage(int x, int y) {
+	if(deliverySystem[x][y].cnt>0)
+		return -1;
+	else 
+		return 0;
 	
 }
 
