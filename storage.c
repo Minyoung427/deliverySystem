@@ -52,12 +52,39 @@ static void printStorageInside(int x, int y) {
 //int x, int y : cell coordinate to be initialized
 static void initStorage(int x, int y) {
 	
+	int i;
+	
+	deliverySystem = NULL;
+	deliverySystem = (storage_t**)malloc(sizeof(storage_t*) * x);
+
+   for (i=0;i<x;i++) 
+   {
+		deliverySystem[i] = (storage_t*)malloc(sizeof(storage_t) * y);
+   }
+   	
+	deliverySystem[x][y].building = 0;
+	deliverySystem[x][y].cnt = 0;
+	deliverySystem[x][y].context = 0;
+	deliverySystem[x][y].passwd[PASSWD_LEN+1]= 0;
+	deliverySystem[x][y].room = 0;
+
+	
 }
 
 //get password input and check if it is correct for the cell (x,y)
 //int x, int y : cell for password check
 //return : 0 - password is matching, -1 - password is not matching
 static int inputPasswd(int x, int y) {
+	
+	char password;
+	
+	printf("input password for (%d, %d) storage: ", x, y);
+	scanf("%s", &password);
+	
+	if(deliverySystem[x][y].passwd[PASSWD_LEN+1] == password)
+		return 0;
+	else
+		return -1;
 	
 }
 
@@ -72,6 +99,13 @@ static int inputPasswd(int x, int y) {
 //return : 0 - backup was successfully done, -1 - failed to backup
 int str_backupSystem(char* filepath) {
 	
+	FILE *fp;
+	fp = fopen(filepath, "w");
+	
+	fprintf(fp, "%s", deliverySystem);	
+	
+	fclose(fp);
+	
 }
 
 
@@ -81,10 +115,27 @@ int str_backupSystem(char* filepath) {
 //return : 0 - successfully created, -1 - failed to create the system
 int str_createSystem(char* filepath) {
 	
+	FILE *fp;
+	int i,j;
+	
+	fp = fopen(filepath, "r");
+	
+	if (fp == NULL)
+		return -1;	
+	
+
+
+
+	return 0; 	
+	
+	
+	
 }
 
 //free the memory of the deliverySystem 
 void str_freeSystem(void) {
+	
+	free(deliverySystem);
 	
 }
 
@@ -148,6 +199,20 @@ int str_checkStorage(int x, int y) {
 //return : 0 - successfully put the package, -1 - failed to put
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
 	
+	deliverySystem[x][y].building = nBuilding;
+	deliverySystem[x][y].room = nRoom;
+	deliverySystem[x][y].passwd[PASSWD_LEN+1] = passwd[PASSWD_LEN+1];	
+	deliverySystem[x][y].context = msg[MAX_MSG_SIZE+1];	
+	deliverySystem[x][y].cnt = 1;
+		
+	storedCnt++;
+	
+	if (deliverySystem[x][y].cnt > 0)
+		return 0;
+	else
+		return -1;
+
+	
 }
 
 
@@ -157,10 +222,17 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 //int x, int y : coordinate of the cell to extract
 //return : 0 - successfully extracted, -1 = failed to extract
 int str_extractStorage(int x, int y) {
-	if(deliverySystem[x][y].cnt>0)
-		return -1;
-	else 
-		return 0;
+	
+	if(inputPasswd(x, y) == 0){
+    	
+		printStorageInside(x, y);
+    	storedCnt--;
+    	
+    	return 0;	
+	}
+    else
+    	return -1;
+	
 	
 }
 
@@ -169,6 +241,22 @@ int str_extractStorage(int x, int y) {
 //int nBuilding, int nRoom : my building/room numbers
 //return : number of packages that the storage system has
 int str_findStorage(int nBuilding, int nRoom) {
+	
+	int cnt=0;
+	int i, j;
+	
+	for (i=0;i<4;i++)
+	{
+		for(j=0;j<6;j++)
+		{
+			if(deliverySystem[i][j].building == nBuilding && deliverySystem[i][j].room == nRoom)
+			{
+				printf("Found a package in (%d, %d)", i, j);
+				cnt++;
+				break;
+			}
+		}
+	}
 	
 	return cnt;
 }
